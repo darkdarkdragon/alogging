@@ -4,8 +4,10 @@ package alogging;
 
 //import thx.promise.Promise;
 //import thx.core.Nil;
-import haxe.Serializer;
-import haxe.Unserializer;
+
+//import haxe.Serializer;
+//import haxe.Unserializer;
+import haxe.Json;
 
 #if !macro
 import haxe.rtti.Meta;
@@ -198,13 +200,23 @@ class Logging {
      * @param configStr
      * @param configFileName
      */
+	@:noCompletion
     public static function _init(?configStr: String, ?configFileName: String) {
         var t = Meta.getType(alogging.meta.MetaHolder);
         if (Reflect.hasField(t, 'loggerLevel')) {
-            loggerLevel = Unserializer.run(t.loggerLevel[0]);
+//            loggerLevel = Unserializer.run(t.loggerLevel[0]);
+            var obj = Json.parse(t.loggerLevel[0]);
+            for (f in Reflect.fields(obj)) {
+                loggerLevel.set(Std.parseInt(f), Reflect.field(obj, f));
+            }
+            trace(t.loggerLevel[0]);
         }
         if (Reflect.hasField(t, 'loggerName2Num')) {
-            loggerName2Num = Unserializer.run(t.loggerName2Num[0]);
+//            loggerName2Num = Unserializer.run(t.loggerName2Num[0]);
+            var obj = Json.parse(t.loggerName2Num[0]);
+            for (f in Reflect.fields(obj)) {
+                loggerName2Num.set(f, Reflect.field(obj, f));
+            }
         }
     }
 
@@ -217,9 +229,13 @@ class Logging {
     }
 
     /// to be used from generated code
+	@:noCompletion
     public static var _globalLevel: Int = 0;
+	@:noCompletion
     public static var handlerLevel: Map<Int, Int> = new Map();
+	@:noCompletion
     public static var loggerLevel: Map<Int, Int> = new Map();
+	@:noCompletion
     public static var loggerName2Num: Map<String, Int> = new Map();
 
 #end
@@ -291,7 +307,7 @@ class Logging {
         var levelNum = Logging.levelNum(level);
 
         var handleCode;
-        if (Context.defined('js')) {
+        if (Context.defined('js') && !Context.defined('lua')) {
             handleCode = JSConsoleHandler.handle(level, logger, message);
         } else {
             handleCode = TraceHandler.handle(level, logger, message);
@@ -355,16 +371,29 @@ class Logging {
                             case TInst(t, params):
                                 var ct = t.get();
                                 if (ct.module == 'alogging.meta.MetaHolder') {
-                                   trace('COOL!');
-                                   trace(ct.meta.has('initCalled'));
-                                   if (ct.meta.has('loggerLevel')) {
-                                       ct.meta.remove('loggerLevel');
-                                   }
-                                   ct.meta.add('loggerLevel', [ macro $v { Serializer.run(_loggerLevel) } ], Context.currentPos());
-                                   if (ct.meta.has('loggerName2Num')) {
-                                       ct.meta.remove('loggerName2Num');
-                                   }
-                                   ct.meta.add('loggerName2Num', [ macro $v { Serializer.run(loggerName2Num) } ], Context.currentPos());
+                                    trace('COOL!');
+                                    trace(ct.meta.has('initCalled'));
+                                    if (ct.meta.has('loggerLevel')) {
+                                        ct.meta.remove('loggerLevel');
+                                    }
+//                                   var loggerLevelSerialized = Serializer.run(_loggerLevel);
+                                    var loggerLevelDyn = { };
+                                    for (k in _loggerLevel.keys()) {
+                                        Reflect.setField(loggerLevelDyn, Std.string(k), _loggerLevel.get(k));
+                                    }
+                                    var loggerLevelSerialized = Json.stringify(loggerLevelDyn);
+                                    ct.meta.add('loggerLevel', [ macro $v{loggerLevelSerialized} ], Context.currentPos());
+
+                                    if (ct.meta.has('loggerName2Num')) {
+                                        ct.meta.remove('loggerName2Num');
+                                    }
+//                                   var loggerName2NumSerialized = Serializer.run(loggerName2Num);
+                                    var loggerName2NumDyn = { };
+                                    for (k in loggerName2Num.keys()) {
+                                        Reflect.setField(loggerName2NumDyn, k, loggerName2Num.get(k));
+                                    }
+                                    var loggerName2NumSerialized = Json.stringify(loggerName2NumDyn);
+                                    ct.meta.add('loggerName2Num', [ macro $v{loggerName2NumSerialized} ], Context.currentPos());
                                 }
     //                            switch (ct) {
     //                                case { name : 'MetaHolder' } :
