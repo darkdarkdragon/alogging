@@ -1,0 +1,6 @@
+-lib thx.core
+-lib thx.promise
+-lib alogging
+-cp src
+-neko bin/Example1.n
+-main alogging.examples.Main

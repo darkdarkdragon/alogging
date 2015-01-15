@@ -1,0 +1,16 @@
+{
+  "name": "alogging",
+  "url" : "https://github.com/darkdarkdragon/alogging/",
+  "classPath":"src",
+  "license": "MIT",
+  "tags": ["cross", "utility", "logging"],
+  "description": "Advanced logging for Haxe",
+  "version": "0.0.1",
+  "releasenote": "Initial release.",
+  "contributors": ["darkdarkdragon"],
+  "dependencies":
+  {
+    "thx.core": "",
+    "thx.core": ""
+  }
+}

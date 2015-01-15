@@ -1,0 +1,6 @@
+-lib thx.core
+-lib thx.promise
+-lib alogging
+-cp src
+-js bin/Example1.js
+-main alogging.examples.Main
